@@ -1,11 +1,14 @@
 require("dotenv").config();
 const mongoose = require("mongoose");
+const auth = require("./middleware/auth");
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const path = require("path");
 require("./validation"); // Assuming you have a separate validation file
 const usermodel = require("./schema");
+const cookieparser = require("cookie-parser");
+const { read } = require("fs");
 
 const app = express();
 const port = process.env.PORT;
@@ -15,11 +18,19 @@ app.use(express.urlencoded({ extended: false }));
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.static(path.join(__dirname, "public")));
-
+app.use(cookieparser());
 app.get("/", (req, res) => {
-  res.render("index");
+  res.render("home");
 });
-
+app.get("/signup", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "signup.html"));
+});
+app.get("/signin", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "signin.html")); // Sends signin.html as a static file
+});
+app.get("/screat", auth, (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "secreat.html")); // Sends signin.html as a static file
+});
 // User Login Route
 app.post("/login", async (req, res) => {
   try {
@@ -29,7 +40,13 @@ app.post("/login", async (req, res) => {
     if (!user) {
       return res.status(400).send("Invalid login details");
     }
-
+    const token = await user.genrateauthtoken();
+    // console.log(token);
+    const cookies = res.cookie("jwt", token, {
+      expires: new Date(Date.now() + 300000),
+      httpOnly: true,
+    });
+    // console.log(cookies);
     const isPasswordMatch = await bcrypt.compare(password, user.password);
     if (!isPasswordMatch) {
       return res.status(400).send("Invalid login details");
@@ -54,13 +71,14 @@ app.post("/register", async (req, res) => {
     }
 
     const passwordHash = await bcrypt.hash(passwordSignup, 10);
-    const newUser = await usermodel.insertMany({
+    const newUser = new usermodel({
       email: emailSignup,
       password: passwordHash,
       phonenumber: phone,
       age: age,
     });
-    console.log(newUser);
+    const result = await newUser.save();
+    console.log(result);
     // Use save instead of insertMany
     return res.send("account created succesfully");
   } catch (error) {
