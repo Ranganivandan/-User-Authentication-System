@@ -31,7 +31,24 @@ app.get("/signin", (req, res) => {
 app.get("/screat", auth, (req, res) => {
   res.sendFile(path.join(__dirname, "public", "secreat.html")); // Sends signin.html as a static file
 });
-// User Login Route
+app.get("/logout", auth, async function (req, res) {
+  try {
+    // Clear the token from the user's tokens array
+    req.user.tokens = req.user.tokens.filter((currentElement) => {
+      return currentElement.token != req.token;
+    });
+    // await req.user.save();
+
+    // req.user.tokens = [];
+    res.clearCookie("jwt");
+    await req.user.save();
+    console.log("Logout successfully");
+    res.send("Logout successfully");
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+});
+
 app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -51,7 +68,7 @@ app.post("/login", async (req, res) => {
     if (!isPasswordMatch) {
       return res.status(400).send("Invalid login details");
     } else {
-      res.send("login succesfully");
+      res.send("<h1>Login succesfully</h1>");
     }
   } catch (error) {
     console.error(error);
@@ -80,7 +97,7 @@ app.post("/register", async (req, res) => {
     const result = await newUser.save();
     console.log(result);
     // Use save instead of insertMany
-    return res.send("account created succesfully");
+    return res.send("<h1>account created succesfully</h1>");
   } catch (error) {
     console.error(error);
     return res.status(500).send("Internal server error");
