@@ -1,3 +1,4 @@
+require("dotenv").config();
 const mongoose = require("mongoose");
 const express = require("express");
 const jwt = require("jsonwebtoken");
@@ -7,8 +8,7 @@ require("./validation"); // Assuming you have a separate validation file
 const usermodel = require("./schema");
 
 const app = express();
-const PORT = 4500;
-const JWT_SECRET = "secreatkey"; // Use environment variables for sensitive info
+const port = process.env.PORT;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -69,6 +69,6 @@ app.post("/register", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+app.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
 });

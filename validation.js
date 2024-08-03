@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 mongoose
-  .connect("mongodb://localhost:27017/registration")
+  .connect(process.env.DATABASE_URL)
   .then(() => {
     console.log("connection succesfull");
   })
