@@ -5,14 +5,12 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const path = require("path");
-require("./validation"); // Assuming you have a separate validation file
+require("./validation");
 const usermodel = require("./schema");
 const cookieparser = require("cookie-parser");
 const { read } = require("fs");
-
 const app = express();
 const port = process.env.PORT;
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.set("view engine", "ejs");
